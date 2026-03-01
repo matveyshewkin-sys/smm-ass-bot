@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request
 from yookassa import Configuration, Payment, WebhookNotification
 from config import YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY, PAY_URL
 from subscription import activate_subscription, TARIFFS
-from bot import bot
 
 router = APIRouter()
 
@@ -42,6 +41,8 @@ async def create_payment(data: dict):
 
 @router.post("/yookassa")
 async def yookassa_webhook(request: Request):
+    from bot import bot  # переносим сюда, чтобы избежать циклического импорта
+
     body = await request.body()
     notification = WebhookNotification.factory(body)
 
@@ -62,4 +63,4 @@ async def yookassa_webhook(request: Request):
             f"📊 Доступно {tariff['requests']} запросов"
         )
 
-    return {"status": "ok"} 
+    return {"status": "ok"}
