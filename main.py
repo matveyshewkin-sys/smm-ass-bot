@@ -8,22 +8,16 @@ import os
 
 app = FastAPI()
 
-# подключаем платежи
 app.include_router(payments_router)
 
 WEBHOOK_PATH = "/webhook"
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # будет из Railway
+WEBHOOK_URL = "https://smm-ass.ru"
 
 @app.on_event("startup")
 async def on_startup():
     await init_db()
-
-    # удаляем старый webhook если был
     await bot.delete_webhook(drop_pending_updates=True)
-
-    # ставим новый webhook
     await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH)
-
 
 @app.post(WEBHOOK_PATH)
 async def telegram_webhook(request: Request):
@@ -31,7 +25,6 @@ async def telegram_webhook(request: Request):
     update = Update.model_validate(data)
     await dp.feed_update(bot, update)
     return {"ok": True}
-
 
 @app.get("/")
 async def root():
