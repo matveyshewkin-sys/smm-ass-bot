@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from yookassa import Configuration, Payment
-from yookassa.webhook_notification.webhook_notification import WebhookNotification  # <- исправлено
+from yookassa.domain.notification import WebhookNotification
 from config import YOOKASSA_SHOP_ID, YOOKASSA_SECRET_KEY, PAY_URL
 from subscription import activate_subscription, TARIFFS
 
@@ -54,7 +54,7 @@ async def yookassa_webhook(request: Request):
 
         tariff = TARIFFS[tariff_key]
 
-        from bot import bot  # избегаем циклические импорты
+        from bot import bot
         await bot.send_message(user_id, "✅ Оплата прошла успешно")
         await bot.send_message(
             user_id,
