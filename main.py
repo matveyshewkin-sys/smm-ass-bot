@@ -11,7 +11,7 @@ app = FastAPI()
 app.include_router(payments_router)
 
 WEBHOOK_PATH = "/webhook"
-WEBHOOK_URL = "https://smm-ass.ru"
+WEBHOOK_URL = "https://www.smmass.online"
 
 @app.on_event("startup")
 async def on_startup():
