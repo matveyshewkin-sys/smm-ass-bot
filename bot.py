@@ -22,7 +22,11 @@ async def start_handler(message: types.Message):
     async with async_session() as session:
         user = await session.get(User, user_id)
         if not user:
-            user = User(id=user_id)
+            user = User(
+                id=user_id,
+                free_requests=5,
+                paid_requests_left=0
+            )
             session.add(user)
             await session.commit()
 
