@@ -23,7 +23,7 @@ async def generate_ai_response(prompt: str) -> str:
 
     payload = {
         "folderId": folder_id,
-        "model": "gpt://b1g7sbvhcup1f7boq36/yandexgpt/latest",
+        "model": "gpt://b1g7stbhvcupi17fbq36/yandexgpt/latest",
         "messages": [
             {"role": "system", "content": "Ты профессиональный SMM-эксперт."},
             {"role": "user", "content": prompt},
