@@ -24,7 +24,7 @@ async def start_handler(message: types.Message):
         if not user:
             user = User(
                 id=user_id,
-                free_requests=1000,
+                free_requests=5,
                 paid_requests_left=0
             )
             session.add(user)
