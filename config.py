@@ -2,8 +2,7 @@ import os
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
-
-import os
+YANDEX_FOLDER_ID = os.getenv("YANDEX_FOLDER_ID")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///db.sqlite3")
 
