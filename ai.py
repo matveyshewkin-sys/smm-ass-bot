@@ -1,8 +1,7 @@
 import aiohttp
-from config import YANDEX_API_KEY, YANDEX_FOLDER_ID
+from config import YANDEX_API_KEY
 
-YANDEX_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-
+YANDEX_URL = "https://llm.api.cloud.yandex.net/v1/chat/completions"
 
 async def generate_ai_response(prompt: str) -> str:
     headers = {
@@ -11,34 +10,24 @@ async def generate_ai_response(prompt: str) -> str:
     }
 
     payload = {
-        "modelUri": f"gpt://{YANDEX_FOLDER_ID}/yandexgpt/latest",
-        "completionOptions": {
-            "stream": False,
-            "temperature": 0.6,
-            "maxTokens": 2000,
-        },
+        "model": "yandexgpt-5-lite",
         "messages": [
-            {"role": "system", "text": "Ты профессиональный SMM-эксперт."},
-            {"role": "user", "text": prompt},
+            {"role": "system", "content": "Ты профессиональный SMM-эксперт."},
+            {"role": "user", "content": prompt},
         ],
+        "temperature": 0.6,
+        "max_tokens": 1500,
     }
 
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(YANDEX_URL, json=payload, headers=headers) as resp:
-                if resp.status != 200:
-                    error_text = await resp.text()
-                    print("YANDEX ERROR:", error_text)
-                    return f"Ошибка AI: {error_text}"
-
                 data = await resp.json()
-                return (
-                    data.get("result", {})
-                        .get("alternatives", [{}])[0]
-                        .get("message", {})
-                        .get("text", "⚠️ AI не смог сгенерировать ответ.")
-                )
+
+                if resp.status != 200:
+                    return f"Ошибка AI: {data}"
+
+                return data["choices"][0]["message"]["content"]
 
     except Exception as e:
-        print("EXCEPTION:", e)
-        return "⚠️ Ошибка соединения с AI-сервисом. Попробуйте позже."
+        return f"Ошибка соединения: {str(e)}"
