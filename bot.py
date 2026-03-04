@@ -2,11 +2,8 @@ import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from config import BOT_TOKEN, ADMIN_LOG_CHANNEL_ID
-from db import init_db, async_session, User
-from subscription import (
-    check_subscription_status,
-    decrement_request,
-)
+from db import async_session, User
+from subscription import check_subscription_status, decrement_request
 from keyboards import subscribe_kb
 from ai import generate_ai_response
 from datetime import datetime
@@ -47,25 +44,28 @@ async def handle_message(message: types.Message):
     username = message.from_user.username or "без username"
     user_text = message.text
 
-    # Проверка подписки
-    status, until_date = await check_subscription_status(user_id)
-
     async with async_session() as session:
         user = await session.get(User, user_id)
 
-    # 🔴 Нет подписки или истекла
-    if status in ["no_subscription", "expired"]:
-        if user and user.free_requests > 0:
-            pass
-        else:
-            await message.answer(
-                "❌ Бесплатные запросы закончились или подписка истекла.\n\n"
-                "Выберите тариф для продолжения:",
-                reply_markup=subscribe_kb(user_id)
+        if not user:
+            user = User(
+                id=user_id,
+                free_requests=5,
+                paid_requests_left=0
             )
-            return
+            session.add(user)
+            await session.commit()
 
-    # 🟡 Подписка скоро заканчивается
+    status, until_date = await check_subscription_status(user_id)
+
+    if user.free_requests <= 0 and status in ["no_subscription", "expired"]:
+        await message.answer(
+            "❌ Бесплатные запросы закончились или подписка истекла.\n\n"
+            "Выберите тариф для продолжения:",
+            reply_markup=subscribe_kb(user_id)
+        )
+        return
+
     if status == "expiring_soon":
         await message.answer(
             f"⚠️ Ваша подписка заканчивается "
@@ -74,7 +74,6 @@ async def handle_message(message: types.Message):
             reply_markup=subscribe_kb(user_id)
         )
 
-    # Проверка лимита запросов
     can_proceed = await decrement_request(user_id)
 
     if not can_proceed:
@@ -85,13 +84,10 @@ async def handle_message(message: types.Message):
         )
         return
 
-    # Генерация AI-ответа
     ai_response = await generate_ai_response(user_text)
 
-    # Ответ пользователю
     await message.answer(ai_response)
 
-    # Логирование
     log_text = (
         f"👤 Пользователь: @{username}\n"
         f"🆔 user_id: {user_id}\n"
@@ -100,4 +96,5 @@ async def handle_message(message: types.Message):
         f"🤖 Ответ AI: {ai_response}"
     )
 
-    await bot.send_message(ADMIN_LOG_CHANNEL_ID, log_text)
+    if ADMIN_LOG_CHANNEL_ID:
+        await bot.send_message(ADMIN_LOG_CHANNEL_ID, log_text)
