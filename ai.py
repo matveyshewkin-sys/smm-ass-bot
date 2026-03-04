@@ -24,25 +24,21 @@ async def generate_ai_response(prompt: str) -> str:
     }
 
     try:
-    async with aiohttp.ClientSession() as session:
-        async with session.post(YANDEX_URL, json=payload, headers=headers) as resp:
-            data = await resp.json()
+        async with aiohttp.ClientSession() as session:
+            async with session.post(YANDEX_URL, json=payload, headers=headers) as resp:
+                if resp.status != 200:
+                    error_text = await resp.text()
+                    print("YANDEX ERROR:", error_text)
+                    return f"Ошибка AI: {error_text}"
 
-            if resp.status != 200:
-                error_text = await resp.text()
-                print("YANDEX ERROR:", error_text)
-                return f"Ошибка AI: {error_text}"
+                data = await resp.json()
+                return (
+                    data.get("result", {})
+                        .get("alternatives", [{}])[0]
+                        .get("message", {})
+                        .get("text", "⚠️ AI не смог сгенерировать ответ.")
+                )
 
-            return (
-                data.get("result", {})
-                    .get("alternatives", [{}])[0]
-                    .get("message", {})
-                    .get("text", "⚠️ AI не смог сгенерировать ответ.")
-            )
-
-except Exception as e:
-    print("EXCEPTION:", e)
-    return "⚠️ Ошибка соединения с AI-сервисом. Попробуйте позже."
-
-    except Exception:
+    except Exception as e:
+        print("EXCEPTION:", e)
         return "⚠️ Ошибка соединения с AI-сервисом. Попробуйте позже."
