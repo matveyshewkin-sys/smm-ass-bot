@@ -98,3 +98,11 @@ async def handle_message(message: types.Message):
 
     if ADMIN_LOG_CHANNEL_ID:
         await bot.send_message(ADMIN_LOG_CHANNEL_ID, log_text)
+
+
+async def main():
+    await dp.start_polling(bot)
+
+
+if name == "__main__":
+    asyncio.run(main())
