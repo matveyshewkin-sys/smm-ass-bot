@@ -84,9 +84,15 @@ async def handle_message(message: types.Message):
         )
         return
 
+    processing_msg = await message.answer("⏳ Генерирую ответ...")
+
     ai_response = await generate_ai_response(user_text)
 
-    await message.answer(ai_response)
+    await bot.edit_message_text(
+        chat_id=message.chat.id,
+        message_id=processing_msg.message_id,
+        text=ai_response
+    )
 
     log_text = (
         f"👤 Пользователь: @{username}\n"
