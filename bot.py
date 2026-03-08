@@ -27,15 +27,7 @@ async def start_handler(message: types.Message):
             session.add(user)
             await session.commit()
 
-    await message.answer(
-        "🚀 Добро пожаловать в СММчат!\n\n"
-        "Бот помогает:\n"
-        "• писать посты для Telegram, VK, Instagram\n"
-        "• придумывать рекламные тексты\n"
-        "• генерировать контент-планы\n"
-        "• отвечать клиентам\n\n"
-        "🎁 Вам доступно 5 бесплатных AI-запросов."
-    )
+    await message.answer("Скорее задавайте свой вопрос ⬇️")
 
 
 @dp.message()
@@ -110,5 +102,5 @@ async def main():
     await dp.start_polling(bot)
 
 
-if __name__ == "__main__":
+if name == "__main__":
     asyncio.run(main())
